@@ -12,14 +12,19 @@ export default function Home() {
     if (!isim) return alert("Adını bahşet asil şövalye!");
     setLoading(true);
     try {
-      const res = await fetch("/api/ask", {
+      const res = await fetch("/api/prophecy", {
         method: "POST",
-        body: JSON.stringify({ isim, mod, soru }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: isim, mood: mod, question: soru }),
       });
       const data = await res.json();
-      setCevap(data.cevap);
+      if (!res.ok) {
+        throw new Error(data.error ?? "Beklenmeyen hata olustu.");
+      }
+      setCevap(data.prophecy ?? "");
     } catch (e) {
       console.error(e);
+      alert(e instanceof Error ? e.message : "Beklenmeyen hata olustu.");
     }
     setLoading(false);
   };
