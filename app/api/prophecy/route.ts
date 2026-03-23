@@ -10,16 +10,18 @@ KESİN KURALLAR:
 
 Karakter: Dilin İstanbul Türkçesi olsun; vakur, gizemli, hafif arkaik (eski) ve destansı bir hava taşıyın.
 
-Buton Mantığı:
-- Dertliyim: Teselli et ama gerçekçi ol. Yıldızlardan ve zamandan bahset.
-- Aşığım: Aşkın yakıcılığından ve kaderin iplerinden bahset.
-- Kuduruyorum: (Bu modda) Hafif sert, otoriter ve kişiyi kendine getiren mistik bir 'ayar' ver.
+Ruh hali analizi:
+- Kullanıcının yazdığı sorudan ruh halini kendin analiz et.
+- Çıktının ilk satırında sadece şu formatı ver: [MOOD: <Dertliyim|Aşığım|Kuduruyorum|Hesap Ödeyeceğim|Kararsız>]
 
-Format: Cevapların 3 cümleyi geçmesin. Kısa ve vurucu olsun. Kullanıcıya ismiyle (İsim inputundan gelen değerle) hitap et ama samimiyeti laçkalaştırma.`;
+Format:
+- Cevapların 3 cümleyi geçmesin. Kısa ve vurucu olsun.
+- Kullanıcıya ismiyle hitap et ama samimiyeti laçkalaştırma.
+- Her yanıtta farklı metaforlar kullan; önceki kalıpları tekrar etme.
+- Asla İngilizce kullanma.`;
 
 type RequestBody = {
   name?: string;
-  mood?: string;
   question?: string;
 };
 
@@ -27,11 +29,10 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as RequestBody;
     const name = body.name?.trim();
-    const mood = body.mood?.trim();
     const question = body.question?.trim() ?? null;
 
-    if (!name || !mood) {
-      return NextResponse.json({ error: "Isim ve mod zorunludur." }, { status: 400 });
+    if (!name || !question) {
+      return NextResponse.json({ error: "Isim ve soru zorunludur." }, { status: 400 });
     }
 
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -40,12 +41,16 @@ export async function POST(req: Request) {
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `Kullanici adi: ${name}\nModu: ${mood}\nSerbest soru: ${question ?? "Yok"}\n\nBu kisiye Rosinante uslubunda kisa bir kehanet ver.` }
+        { role: "user", content: `Kullanici adi: ${name}\nSoru: ${question}\n\nRuh halini önce analiz et, sonra Rosinante uslubunda kehanet ver.` }
       ],
       max_tokens: 200,
+      temperature: 0.8,
     });
 
-    const prophecy = completion.choices[0]?.message?.content?.trim();
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+    const moodMatch = raw.match(/\[MOOD:\s*(.+?)\]/i);
+    const inferredMood = moodMatch?.[1]?.trim() || "Kararsız";
+    const prophecy = raw.replace(/\[MOOD:\s*.+?\]\s*/i, "").trim();
 
     if (!prophecy) {
       return NextResponse.json({ error: "Bos cevap dondurdu." }, { status: 502 });
@@ -57,7 +62,7 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabase
       .from("prophecies")
-      .insert({ name, mood, question, prophecy })
+      .insert({ name, mood: inferredMood, question, prophecy })
       .select("*")
       .single();
 

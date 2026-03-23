@@ -3,19 +3,19 @@ import { useState } from "react";
 
 export default function Home() {
   const [isim, setIsim] = useState("");
-  const [mod, setMod] = useState("Dertliyim");
   const [soru, setSoru] = useState("");
   const [cevap, setCevap] = useState("");
   const [loading, setLoading] = useState(false);
 
   const sor = async () => {
     if (!isim) return alert("Adını bahşet asil şövalye!");
+    if (!soru.trim()) return alert("Sorunu fısıldamadan kehanet doğmaz.");
     setLoading(true);
     try {
       const res = await fetch("/api/prophecy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: isim, mood: mod, question: soru }),
+        body: JSON.stringify({ name: isim, question: soru }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -91,28 +91,12 @@ export default function Home() {
               <span className="absolute bottom-0 left-0 h-[1px] bg-amber-600 w-0 group-focus-within:w-full transition-all duration-500"></span>
             </div>
 
-            {/* Mod Seçimi */}
-            <div className="grid grid-cols-2 gap-3">
-              {["Dertliyim", "Aşığım", "Hesap Ödeyeceğim", "Kuduruyorum"].map((m, index, arr) => (
-                <button
-                  key={m}
-                  onClick={() => setMod(m)}
-                  className={`px-5 py-2 rounded-[999px_999px_850px_850px] text-[10px] uppercase tracking-widest transition-all duration-500 border shadow-inner ${
-                    mod === m
-                      ? "bg-[linear-gradient(180deg,#8f6b31,#5c4017)] border-amber-400/70 text-amber-100 font-bold shadow-[0_0_22px_rgba(217,119,6,0.45),inset_0_0_18px_rgba(0,0,0,0.45)]"
-                      : "bg-[linear-gradient(180deg,#221d19,#12100f)] border-zinc-700 text-zinc-400 hover:border-amber-700/70 hover:text-zinc-200"
-                  } ${arr.length % 2 === 1 && index === arr.length - 1 ? "col-span-2" : ""}`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-
             {/* Soru Alanı */}
             <textarea
               className="w-full bg-zinc-900/30 border border-zinc-800 rounded-2xl p-5 outline-none focus:border-amber-600/50 transition-all text-[16px] h-24 resize-none placeholder:text-zinc-700"
               placeholder="Rosinante'ye bir soru fısılda..."
               onChange={(e) => setSoru(e.target.value)}
+              value={soru}
             />
 
             {/* BUTON */}
