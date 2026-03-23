@@ -1,9 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-const SYSTEM_PROMPT =
-  "Sen Antakya'nın eğlence mekanı Rosinante'nin bilge ve fırlama atısın. Don Kişot'un asil atısın ama yıllardır Antakya'da yaşadığın için yerel kültürü ve şiveyi iyi tanıyorsun. Kısa, vurucu, bazen şövalye bazen Antakyalı dost gibi cevap ver. Yel değirmeni, macera, asillik metaforları kullan. Max 3 cümle.";
+const SYSTEM_PROMPT = "Sen Antakya'nın eğlence mekanı Rosinante'nin bilge ve fırlama atısın. Don Kişot'un asil atısın ama yıllardır Antakya'da yaşadığın için yerel kültürü ve şiveyi iyi tanıyorsun. Kısa, vurucu, bazen şövalye bazen Antakyalı dost gibi cevap ver. Yel değirmeni, macera, asillik metaforları kullan. Max 3 cümle.";
 
 type RequestBody = {
   name?: string;
@@ -19,80 +18,46 @@ export async function POST(req: Request) {
     const question = body.question?.trim() ?? null;
 
     if (!name || !mood) {
-      return NextResponse.json(
-        { error: "Isim ve mod zorunludur." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Isim ve mod zorunludur." }, { status: 400 });
     }
 
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!geminiApiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY tanimli degil." },
-        { status: 500 },
-      );
-    }
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return NextResponse.json(
-        {
-          error:
-            "Supabase environment degiskenleri eksik (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY).",
-        },
-        { status: 500 },
-      );
-    }
-
-    const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp",
-      systemInstruction: SYSTEM_PROMPT,
+    const client = new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: process.env.OPENROUTER_API_KEY!,
     });
 
-    const prompt =
-      `Kullanici adi: ${name}\n` +
-      `Modu: ${mood}\n` +
-      `Serbest soru: ${question ?? "Yok"}\n\n` +
-      "Bu kisiye Rosinante uslubunda kisa bir kehanet ver.";
+    const completion = await client.chat.completions.create({
+      model: "mistralai/mistral-7b-instruct:free",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `Kullanici adi: ${name}\nModu: ${mood}\nSerbest soru: ${question ?? "Yok"}\n\nBu kisiye Rosinante uslubunda kisa bir kehanet ver.` }
+      ],
+    });
 
-    const geminiResult = await model.generateContent(prompt);
-    const prophecy = geminiResult.response.text().trim();
+    const prophecy = completion.choices[0]?.message?.content?.trim();
 
     if (!prophecy) {
-      return NextResponse.json(
-        { error: "Gemini bos cevap dondurdu." },
-        { status: 502 },
-      );
+      return NextResponse.json({ error: "Bos cevap dondurdu." }, { status: 502 });
     }
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
     const { data, error } = await supabase
       .from("prophecies")
-      .insert({
-        name,
-        mood,
-        question,
-        prophecy,
-      })
+      .insert({ name, mood, question, prophecy })
       .select("*")
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: `Supabase kayit hatasi: ${error.message}` },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: `Supabase hatasi: ${error.message}` }, { status: 500 });
     }
 
     return NextResponse.json({ prophecy, row: data });
+
   } catch (err) {
     console.error("HATA DETAYI:", err);
-    return NextResponse.json(
-      { error: "Istek islenirken beklenmeyen bir hata olustu." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Beklenmeyen hata olustu." }, { status: 500 });
   }
 }
