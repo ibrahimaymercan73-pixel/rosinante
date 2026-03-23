@@ -30,11 +30,16 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#e5e5e5] flex flex-col items-center justify-center p-6 font-serif selection:bg-amber-900/50 overflow-hidden">
-      {/* Background Glows */}
+    <div className="min-h-screen text-[#e5e5e5] flex flex-col items-center justify-center p-6 font-serif selection:bg-amber-900/50 overflow-hidden bg-[radial-gradient(circle_at_20%_20%,#1d2334_0%,#0c0f18_35%,#070809_70%,#050505_100%)]">
+      {/* Atmospheric layers */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-amber-900/10 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-orange-900/10 rounded-full blur-[120px] animate-pulse delay-700"></div>
+        <div className="absolute inset-0 opacity-35 bg-[radial-gradient(circle_at_30%_25%,rgba(74,95,142,0.22),transparent_50%),radial-gradient(circle_at_70%_65%,rgba(37,43,67,0.25),transparent_55%)]"></div>
+        <div className="absolute -top-24 -left-20 w-[44rem] h-[44rem] rounded-full border border-amber-900/20 animate-[spin_160s_linear_infinite]"></div>
+        <div className="absolute -bottom-40 -right-16 w-[40rem] h-[40rem] rounded-full border border-indigo-800/20 animate-[spinReverse_190s_linear_infinite]"></div>
+        <div className="absolute left-[8%] top-[18%] w-[14rem] h-[14rem] opacity-15 animate-[spin_75s_linear_infinite] text-amber-600/60 text-8xl">✶</div>
+        <div className="absolute right-[12%] bottom-[16%] w-[16rem] h-[16rem] opacity-10 animate-[spinReverse_90s_linear_infinite] text-indigo-300/40 text-9xl">☽</div>
+        <div className="absolute -left-24 top-1/3 w-[34rem] h-[18rem] rounded-full bg-zinc-300/8 blur-[140px] animate-[drift_24s_ease-in-out_infinite]"></div>
+        <div className="absolute right-[-8rem] bottom-1/4 w-[30rem] h-[16rem] rounded-full bg-indigo-200/8 blur-[130px] animate-[drift_30s_ease-in-out_infinite_reverse]"></div>
       </div>
 
       <div className="relative z-10 w-full max-w-xl">
@@ -62,7 +67,7 @@ export default function Home() {
             </svg>
           </div>
 
-          <h1 className="text-6xl font-light tracking-[0.2em] uppercase mb-1 text-center bg-clip-text text-transparent bg-gradient-to-b from-amber-100 to-amber-700 font-black">
+          <h1 className="text-6xl font-light tracking-[0.2em] uppercase mb-1 text-center bg-clip-text text-transparent bg-gradient-to-b from-[#f7e8b2] via-[#d5a84a] to-[#6a4715] font-black drop-shadow-[0_3px_0_#3c280c] [text-shadow:0_2px_2px_rgba(0,0,0,0.65),0_0_30px_rgba(212,175,55,0.35)]">
             ROSINANTE
           </h1>
           <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-amber-600 to-transparent mb-2"></div>
@@ -70,7 +75,10 @@ export default function Home() {
         </div>
 
         {/* ANA FORM KARTI */}
-        <div className="bg-gradient-to-b from-zinc-900/80 to-black/80 backdrop-blur-3xl border border-white/5 rounded-[40px] p-10 shadow-2xl border-t-white/10">
+        <div className="relative bg-[linear-gradient(180deg,rgba(41,33,24,0.86),rgba(15,12,10,0.94))] backdrop-blur-2xl border border-[#5f4a2a] rounded-[40px] p-10 shadow-[0_25px_80px_rgba(0,0,0,0.65)]">
+          <div className="pointer-events-none absolute inset-[1px] rounded-[39px] border border-amber-200/10"></div>
+          <div className="pointer-events-none absolute inset-0 rounded-[40px] bg-[radial-gradient(circle_at_20%_15%,rgba(212,175,55,0.08),transparent_45%),radial-gradient(circle_at_80%_85%,rgba(112,84,35,0.12),transparent_48%)]"></div>
+          <div className="pointer-events-none absolute inset-0 rounded-[40px] opacity-[0.08] bg-[url('https://www.transparenttextures.com/patterns/old-wall.png')]"></div>
           <div className="space-y-8">
             {/* İsim Girişi */}
             <div className="relative group">
@@ -89,7 +97,11 @@ export default function Home() {
                 <button
                   key={m}
                   onClick={() => setMod(m)}
-                  className={`px-5 py-2 rounded-full text-[10px] uppercase tracking-widest transition-all duration-300 border ${mod === m ? "bg-amber-600 border-amber-500 text-black font-bold" : "bg-transparent border-zinc-800 text-zinc-500 hover:border-zinc-500"}`}
+                  className={`px-5 py-2 rounded-[999px_999px_850px_850px] text-[10px] uppercase tracking-widest transition-all duration-500 border shadow-inner ${
+                    mod === m
+                      ? "bg-[linear-gradient(180deg,#8f6b31,#5c4017)] border-amber-400/70 text-amber-100 font-bold shadow-[0_0_22px_rgba(217,119,6,0.45),inset_0_0_18px_rgba(0,0,0,0.45)]"
+                      : "bg-[linear-gradient(180deg,#221d19,#12100f)] border-zinc-700 text-zinc-400 hover:border-amber-700/70 hover:text-zinc-200"
+                  }`}
                 >
                   {m}
                 </button>
@@ -107,10 +119,12 @@ export default function Home() {
             <button
               onClick={sor}
               disabled={loading}
-              className="w-full group relative py-6 bg-amber-600 rounded-2xl overflow-hidden transition-all active:scale-95 shadow-[0_15px_30px_-10px_rgba(217,119,6,0.4)]"
+              className="w-full group relative py-6 rounded-2xl overflow-hidden transition-all active:scale-95 shadow-[0_16px_35px_-12px_rgba(217,119,6,0.62)] bg-[linear-gradient(180deg,#ffd67a_0%,#d0922f_24%,#8b5a1c_65%,#5a3710_100%)] border border-amber-300/40"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span className="relative text-black font-black tracking-[0.3em] text-xs uppercase">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_20%_30%,rgba(255,245,200,0.65),transparent_30%),radial-gradient(circle_at_80%_65%,rgba(255,220,140,0.35),transparent_35%)]"></div>
+              <div className="pointer-events-none absolute -top-4 left-6 opacity-0 group-hover:opacity-90 transition-all duration-500 text-amber-100/80 text-xs tracking-widest">✶ ✦ ✶</div>
+              <div className="pointer-events-none absolute -bottom-4 right-7 opacity-0 group-hover:opacity-90 transition-all duration-500 text-amber-100/70 text-xs tracking-widest">☽ ✶</div>
+              <span className="relative text-black font-black tracking-[0.3em] text-xs uppercase [text-shadow:0_1px_0_rgba(255,255,255,0.35)]">
                 {loading ? "Ruhlarla Konuşuluyor..." : "KADERİ ÇAĞIR"}
               </span>
             </button>
@@ -133,6 +147,23 @@ export default function Home() {
       </div>
 
       <style jsx global>{`
+        @keyframes spinReverse {
+          from {
+            transform: rotate(360deg);
+          }
+          to {
+            transform: rotate(0deg);
+          }
+        }
+        @keyframes drift {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          50% {
+            transform: translate3d(20px, -12px, 0) scale(1.06);
+          }
+        }
         @keyframes float {
           0%,
           100% {
