@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import Groq from "groq-sdk";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -21,17 +21,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Isim ve mod zorunludur." }, { status: 400 });
     }
 
-    const client = new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey: process.env.OPENROUTER_API_KEY!,
-    });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-    const completion = await client.chat.completions.create({
-      model: "openrouter/auto",
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Kullanici adi: ${name}\nModu: ${mood}\nSerbest soru: ${question ?? "Yok"}\n\nBu kisiye Rosinante uslubunda kisa bir kehanet ver.` }
       ],
+      max_tokens: 200,
     });
 
     const prophecy = completion.choices[0]?.message?.content?.trim();
@@ -58,8 +56,6 @@ export async function POST(req: Request) {
 
   } catch (err) {
     console.error("HATA DETAYI:", err);
-    const message =
-      err instanceof Error ? err.message : "Beklenmeyen hata olustu.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Beklenmeyen hata olustu." }, { status: 500 });
   }
 }
