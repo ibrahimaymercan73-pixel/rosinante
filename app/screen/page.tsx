@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type ProphecyRow = {
   id: string;
@@ -14,12 +14,21 @@ type ProphecyRow = {
 
 export default function ScreenPage() {
   const [items, setItems] = useState<ProphecyRow[]>([]);
+  const supabase = useMemo(() => getSupabaseClient(), []);
+  const configError = !supabase
+    ? "Supabase ayarlari eksik. NEXT_PUBLIC_SUPABASE_URL ve NEXT_PUBLIC_SUPABASE_ANON_KEY tanimlanmali."
+    : null;
 
   useEffect(() => {
     let mounted = true;
 
+    if (!supabase) {
+      return;
+    }
+    const sb = supabase;
+
     async function loadInitial() {
-      const { data } = await supabase
+      const { data } = await sb
         .from("prophecies")
         .select("*")
         .order("created_at", { ascending: false })
@@ -32,7 +41,7 @@ export default function ScreenPage() {
 
     loadInitial();
 
-    const channel = supabase
+    const channel = sb
       .channel("prophecies-realtime")
       .on(
         "postgres_changes",
@@ -46,9 +55,9 @@ export default function ScreenPage() {
 
     return () => {
       mounted = false;
-      void supabase.removeChannel(channel);
+      void sb.removeChannel(channel);
     };
-  }, []);
+  }, [supabase]);
 
   const latest = items[0];
   const faded = useMemo(() => items.slice(1, 8), [items]);
@@ -70,7 +79,9 @@ export default function ScreenPage() {
           </article>
         ) : (
           <article className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-10 text-center">
-            <p className="text-2xl text-zinc-300 md:text-4xl">Yeni kehanet bekleniyor...</p>
+            <p className="text-2xl text-zinc-300 md:text-4xl">
+              {configError ?? "Yeni kehanet bekleniyor..."}
+            </p>
           </article>
         )}
 
