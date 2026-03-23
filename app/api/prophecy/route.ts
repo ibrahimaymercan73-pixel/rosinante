@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(geminiApiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       systemInstruction: SYSTEM_PROMPT,
     });
 
@@ -88,7 +88,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ prophecy, row: data });
-  } catch {
+  } catch (err) {
+    console.error("HATA DETAYI:", err);
     return NextResponse.json(
       { error: "Istek islenirken beklenmeyen bir hata olustu." },
       { status: 500 },
