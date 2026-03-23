@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     });
 
     const completion = await client.chat.completions.create({
-      model: "mistralai/mistral-7b-instruct:free",
+      model: "mistralai/mistral-small-3.1-24b:free",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Kullanici adi: ${name}\nModu: ${mood}\nSerbest soru: ${question ?? "Yok"}\n\nBu kisiye Rosinante uslubunda kisa bir kehanet ver.` }
