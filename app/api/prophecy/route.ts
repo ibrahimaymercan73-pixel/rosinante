@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     });
 
     const completion = await client.chat.completions.create({
-      model: "mistralai/mistral-small-3.1-24b:free",
+      model: "openrouter/auto",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Kullanici adi: ${name}\nModu: ${mood}\nSerbest soru: ${question ?? "Yok"}\n\nBu kisiye Rosinante uslubunda kisa bir kehanet ver.` }
@@ -58,6 +58,8 @@ export async function POST(req: Request) {
 
   } catch (err) {
     console.error("HATA DETAYI:", err);
-    return NextResponse.json({ error: "Beklenmeyen hata olustu." }, { status: 500 });
+    const message =
+      err instanceof Error ? err.message : "Beklenmeyen hata olustu.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
